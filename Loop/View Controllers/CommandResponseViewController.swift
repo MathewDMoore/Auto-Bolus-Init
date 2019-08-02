@@ -36,4 +36,26 @@ extension CommandResponseViewController {
 
         return vc
     }
+    
+    static func generateParameterEstimationReport(deviceManager: DeviceDataManager) -> T {
+        let date = Date()
+        let vc = T(command: { (completionHandler) in
+            deviceManager.loopManager.generateParameterEstimationReport { (report) in
+                DispatchQueue.main.async {
+                    completionHandler([
+                        "Use the Share button above to save this report",
+                        "Generated: \(date)",
+                        report,
+                        "",
+                        ].joined(separator: "\n\n"))
+                }
+            }
+            
+            return NSLocalizedString("Settings review based on glucose, insulin delivery, and meal entries data over the past 24 hours", comment: "The loading message for the parameter estimation report screen")
+        })
+        vc.fileName = "Loop Settings Review \(ISO8601DateFormatter.string(from: date, timeZone: .current, formatOptions: [.withSpaceBetweenDateAndTime, .withInternetDateTime])).md"
+        
+        return vc
+    }
+    
 }
