@@ -387,31 +387,32 @@ class EstimatedMultipliers {
         let reportCarbRatioMultiplier = (carbRatioMultiplier * 100).rounded() / 100
         let reportBasalMultiplier = (basalMultiplier * 100).rounded() / 100
         
+        var isfTag = "?"
+        var basalTag = "?"
+        var crTag = "?"
         switch estimationIntervalType {
         case .fasting:
-            var isfTag = ""
             if deltaGlucose * deltaGlucoseInsulin < 0 && abs(deltaGlucose) > 0.5 * deltaGlucoseBasal {
-                isfTag = "*"
+                isfTag = "!"
             }
-            var basalTag = ""
             if deltaGlucoseBasal > 0.5 * abs(deltaGlucose) {
-                basalTag = "*"
+                basalTag = "!"
             }
             reviewReport += ["\(dateFormatter.string(from: startDate)) to \(dateFormatter.string(from: endDate))"]
-            if (insulinSensitivityMultiplier > 1.0 && basalMultiplier > 1.0) || (insulinSensitivityMultiplier < 1.0 && basalMultiplier < 1.0){
+            if (insulinSensitivityMultiplier > 1.1 && basalMultiplier > 1.1) || (insulinSensitivityMultiplier < 0.9 && basalMultiplier < 0.9){
                 reviewReport += ["ISF multiplier: not available"]
             } else {
                 reviewReport += ["ISF multiplier: \(reportInsulinSensitivityMultiplier) \(isfTag)"]
             }
-            if (insulinSensitivityMultiplier > 1.0 && basalMultiplier > 1.5) || (insulinSensitivityMultiplier < 1.0 && basalMultiplier < 0.5){
+            if (insulinSensitivityMultiplier > 1.1 && basalMultiplier > 1.5) || (insulinSensitivityMultiplier < 0.9 && basalMultiplier < 0.5){
                 reviewReport += ["Basal multiplier: not available"]
             } else {
                 reviewReport += ["Basal multiplier: \(reportBasalMultiplier) \(basalTag)"]
             }
-            if (insulinSensitivityMultiplier > 1.0 && basalMultiplier > 1.0) || basalMultiplier >  1.5 {
-                reviewReport += ["Warning: unannounced meals?"]
+            if (insulinSensitivityMultiplier > 1.25 && basalMultiplier > 1.25) || basalMultiplier >  1.5 {
+                reviewReport += ["Warning: unannounced meals or site issues?"]
             }
-            if basalMultiplier <  0.5 {
+            if (insulinSensitivityMultiplier > 1.25 && basalMultiplier < 0.75) || basalMultiplier <  0.5 {
                 reviewReport += ["Warning: exercise?"]
             }
             
@@ -421,18 +422,18 @@ class EstimatedMultipliers {
                 reviewReport += ["Good observed/entered carbs match,"]
                 reviewReport += ["parameter estimates are not available"]
             } else {
-                reviewReport += ["CR multiplier: \(reportCarbRatioMultiplier)"]
-                if abs(deltaGlucose) < 0.5 * deltaGlucoseBasal && abs(deltaGlucose) < 0.5 * (deltaGlucose + deltaGlucoseInsulin) {
-                    reviewReport += ["ISF multiplier: not available"]
-                } else {
-                    reviewReport += ["ISF multiplier: \(reportInsulinSensitivityMultiplier)"]
+                if abs(deltaGlucose) > 0.5 * deltaGlucoseBasal && abs(deltaGlucose) > 0.5 * (deltaGlucose + deltaGlucoseInsulin) {
+                    isfTag = "!"
                 }
-                if deltaGlucoseBasal < 0.5 * (deltaGlucose + deltaGlucoseInsulin) {
-                    reviewReport += ["Basal multiplier: not available"]
-                } else {
-                    reviewReport += ["Basal multiplier: \(reportBasalMultiplier)"]
+                if deltaGlucoseBasal > 0.5 * abs(deltaGlucose) && deltaGlucoseBasal > 0.5 * (deltaGlucose + deltaGlucoseInsulin) {
+                    basalTag = "!"
                 }
-                reviewReport += ["Review meal entries for accuracy"]
+                if (deltaGlucose + deltaGlucoseInsulin) > 0.5 * abs(deltaGlucose) && (deltaGlucose + deltaGlucoseInsulin) > deltaGlucoseBasal {
+                    crTag = "!"
+                }
+                reviewReport += ["ISF multiplier: \(reportInsulinSensitivityMultiplier) \(isfTag)"]
+                reviewReport += ["Basal multiplier: \(reportBasalMultiplier) \(basalTag)"]
+                reviewReport += ["CR multiplier: \(reportCarbRatioMultiplier) \(crTag)"]
             }
             
         default: reviewReport = ["Error: unknown estimation interval type"]
