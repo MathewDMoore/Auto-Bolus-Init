@@ -107,7 +107,7 @@
 
 /* The title of the basal rate profile screen
    The title text for the basal rate schedule */
-"Basal Rates" = "Basal Rates";
+"Basal Rates" = "Lịch biểu tiêm liều nền";
 
 /* The label of the bolus entry button
    The notification title for a bolus failure */
